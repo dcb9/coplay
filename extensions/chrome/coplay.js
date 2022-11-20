@@ -542,7 +542,11 @@
       title: 'Play'
     });
     on(play, 'click', function() {
-      coplay.player.play();
+      setTimeout(() => {
+        coplay.player.play();
+      }, window.roundTime / 2);
+      let time = coplay.player.getTime();
+      coplay.remote.send(pack('SEEK', time));
       coplay.remote.send(pack('PLAY'));
     });
 
@@ -552,8 +556,12 @@
       title: 'Pause'
     });
     on(pause, 'click', function() {
-      coplay.player.pause();
+      setTimeout(() => {
+        coplay.player.pause();
+      }, window.roundTime / 2);
       coplay.remote.send(pack('PAUSE'));
+      let time = coplay.player.getTime();
+      coplay.remote.send(pack('SEEK', time));
     });
 
     let sync = create('button', main, {
@@ -563,7 +571,7 @@
     });
     on(sync, 'click', function() {
       let time = coplay.player.getTime();
-      coplay.player.seek(time);
+      // coplay.player.seek(time);
       coplay.remote.send(pack('SEEK', time));
     });
 
@@ -582,12 +590,13 @@
       coplay.remote.send(pack('SEEK', 0));
     });
 
-    let fullscreen = create('button', main, {
+    let toggleFullscreenBtn = create('button', main, {
       id: getId('fullscreen'),
       innerHTML: `${icons['expand']}${icons['compress']}`,
       title: 'Toggle fullscreen'
     });
-    on(fullscreen, 'click', function() {
+    on(toggleFullscreenBtn, 'click', function() {
+      coplay.remote.send(pack('FULLSCREEN', !fullscreen()));
       coplay.player.toggleFullscreen();
     });
 
@@ -602,7 +611,7 @@
       pause,
       sync,
       restart,
-      fullscreen
+      fullscreen: toggleFullscreenBtn,
     };
 
     if (location.protocol === 'https:') {
@@ -754,7 +763,9 @@
       peerOptions.secure = true;
       peerOptions.key = 'peerjs';
     }
+    peerOptions.debug = 3;
 
+    console.log("peerOptions: ", peerOptions);
     let peer = new Peer(peerOptions);
 
     peer.on('open', function(id) {
@@ -837,6 +848,8 @@
           round = Date.now() - start;
           count++;
           elapsed += round;
+          window.roundTime = elapsed / count;
+          console.log("current round: " + round + " average: " + (elapsed / count));
           setTimeout(function() {
             heartBeat(c);
           }, 1000);
@@ -846,7 +859,7 @@
           break;
         case 'PATH':
           if (p.data !== getPath()) {
-            console.error('Not on the same page.');
+            console.error('Close connection for not on the same page.');
             c.close();
           }
           break;
@@ -861,6 +874,11 @@
           break;
         case 'PLAY':
           player.play();
+          break;
+        case 'FULLSCREEN':
+          if ((p.data && !fullscreen()) || (!p.data && fullscreen())) {
+            player.toggleFullscreen();
+          }
           break;
       }
     });
@@ -916,9 +934,11 @@
       reliable: false
     });
 
-    c.on('open', function() {
-      connect(c);
-    });
+    if (c) {
+      c.on('open', function() {
+        connect(c);
+      });
+    }
   };
 
   coplay.disconnect = function() {
