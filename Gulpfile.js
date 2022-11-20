@@ -30,8 +30,7 @@ gulp.task(
     return gulp
       .src('./src/coplay.js')
       .pipe(replace("'__ICONS__'", JSON.stringify(iconData)))
-      .pipe(gulp.dest('./extensions/chrome'))
-      .pipe(gulp.dest('./extensions/firefox'));
+      .pipe(gulp.dest('./extensions/chrome'));
   })
 );
 
@@ -40,8 +39,7 @@ gulp.task(
   gulp.series('res', function() {
     return gulp
       .src(['./src/*', '!./src/coplay.js'])
-      .pipe(gulp.dest('./extensions/chrome'))
-      .pipe(gulp.dest('./extensions/firefox'));
+      .pipe(gulp.dest('./extensions/chrome'));
   })
 );
 
@@ -71,32 +69,7 @@ gulp.task(
 );
 
 gulp.task(
-  'pack-firefox-addon',
-  gulp.series('cp', function(cb) {
-    var manifestPath = './extensions/firefox/manifest.json';
-    var manifest = JSON.parse(
-      fs.readFileSync(manifestPath, { encoding: 'utf8' })
-    );
-    manifest.version = version;
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, '  '));
-    exec(
-      "find . -path '*/.*' -prune -o -type f -print | zip ../packed/coplay.firefox.zip -@",
-      {
-        cwd: 'extensions/firefox'
-      },
-      function(error) {
-        if (error) {
-          return cb(error);
-        } else {
-          cb();
-        }
-      }
-    );
-  })
-);
-
-gulp.task(
   'extensions',
-  gulp.series('pack-chrome-extension', 'pack-firefox-addon')
+  gulp.series('pack-chrome-extension')
 );
 gulp.task('default', gulp.series('extensions'));
