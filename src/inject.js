@@ -44,7 +44,8 @@
   let coplayOptions = {
     server: '',
     key: '',
-    autoActivate: true
+    autoActivate: true,
+    iceServers: '[]',
   };
 
   let storage = chrome.storage.sync || chrome.storage.local;

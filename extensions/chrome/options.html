@@ -48,11 +48,15 @@
       #save:not(:focus) {
         border-color: rgba(0, 0, 0, 0.5);
       }
+
+      #ice-servers {
+        width: 100%;
+      }
     </style>
   </head>
   <body>
     <section id="form">
-      <h3>Custom server</h3>
+      <h3>Custom PeerJS server</h3>
       <p id="server-config">
         <input
           type="text"
@@ -67,6 +71,13 @@
           ><input type="checkbox" id="auto-activate" /> Automatically activate
           coplay on applicable sites</label
         >
+      </p>
+      <h3>ICE Server list</h3>
+      <p>Format: JSON List, such as [ server1, server2 ] </p>
+      <p>Find latest server list on https://gist.github.com/yetithefoot/7592580</p>
+      <p>Validating/repairing JSON tool: https://jsoneditoronline.org</p>
+      <p>
+        <textarea id="ice-servers" rows="30"></textarea>
       </p>
     </section>
     <section id="actions">
